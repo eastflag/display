@@ -249,28 +249,37 @@ class ESM {
         await this.checkAndLoginForce()
 
         let responseBody = await this.execute(({model}) => {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    type:'POST',
-                    url:"/Sell/SingleGoods/Save",
-                    contentType:'application/json',
-                    data:JSON.stringify({model})})
-                    .done(resolve)
-                    .fail(() => {
-                        setTimeout(() => {
-                            $.ajax({
-                                type:'POST',
-                                url:"/Sell/SingleGoods/Save",
-                                contentType:'application/json',
-                                data:JSON.stringify({model})})
-                                .done(resolve)
-                                .fail((e) => {
-                                    reject(JSON.stringify(e))
-                                })
-                        }, 500)
-                    })
+            // return new Promise((resolve, reject) => {
+            //     $.ajax({
+            //         type:'POST',
+            //         url:"/Sell/SingleGoods/Save",
+            //         contentType:'application/json',
+            //         data:JSON.stringify({model})})
+            //         .done(resolve)
+            //         .fail(() => {
+            //             setTimeout(() => {
+            //                 $.ajax({
+            //                     type:'POST',
+            //                     url:"/Sell/SingleGoods/Save",
+            //                     contentType:'application/json',
+            //                     data:JSON.stringify({model})})
+            //                     .done(resolve)
+            //                     .fail((e) => {
+            //                         reject(JSON.stringify(e))
+            //                     })
+            //             }, 500)
+            //         })
+            // })
+            return fetch("/Sell/SingleGoods/Save", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({model})
             })
         }, {model})
+
+        console.log(responseBody);
 
         let response = {}
         if (responseBody['Unknown']) {

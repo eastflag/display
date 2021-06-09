@@ -11,7 +11,7 @@ const WebViewContainer = () => {
     window.$ = $;
     esm.init(esmWebview.current);
 
-    // setTimeout(() => esm.loginForce({loginId: 'sohae1672', password: 'ekdnsdlWkd12@'}), 5000);
+    setTimeout(() => esm.loginForce({loginId: 'sohae1672', password: 'ekdnsdlWkd12@'}), 5000);
     // setTimeout(() => esm.searchESMCategory('가방').then(data => console.log(data)), 10000);
     // setTimeout(() => esm.getESMCategoryList(1, 1).then(data => console.log(data)), 15000);
 
@@ -36,8 +36,11 @@ const WebViewContainer = () => {
       images,
       description,
       maximumBuyForPerson,
-      maximumBuyForPersonPeriod})
+      maximumBuyForPersonPeriod
+    })
     console.log(product)
+
+    setTimeout(() => esm.createNewProduct(product).then(data => console.log(data)), 10000);
 
   }, [])
 
