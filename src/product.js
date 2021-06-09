@@ -855,7 +855,7 @@
  "AdminId": null
  }
  */
-import {taobaoContentHtml} from "../utils/utils"
+import _ from 'underscore';
 
 let getRequired = (props, key) => {
     if (!props.hasOwnProperty(key)) throw new Error(`Not Found Required Property : ${key}`)
@@ -932,7 +932,7 @@ export class ESMOptions {
                 "OptionInfoList": []
             }
         }
-        if (item.hasOptions) {
+        if (item && item['hasOptions']) {
             let OptionNameInfo = {"OptionNameLangList": null}
             for (let idx in item.options) {
                 let esmOption = item.options[idx]
@@ -1462,7 +1462,7 @@ export class ESMProduct {
             "InputType": "2", "BuyableQuantityType": "3", "SiteGoodsCountNo": "0", "OldGoodsCount": "0", "OldGoodsCountIAC": "0", "OldGoodsCountGMKT": "0"
         }
 
-        k['PreSale'] = {"UseSettingIAC": false, "SaleStartDateIAC": getRequired(props, 'startDate')},
+        k['PreSale'] = {"UseSettingIAC": false, "SaleStartDateIAC": `${getRequired(props, 'startDate')} 00:00:00`}
         k['SellingPeriod'] = {
             "IAC": {
                 "StartDate": `${getRequired(props, 'startDate')} 00:00:00`,
@@ -1542,6 +1542,63 @@ let generateESMOptionHtml = function(taobao, item) {
   </p>
 </div>`
         }).join('\n')
+}
+
+let http = function(url) {
+    if (!url) return ''
+    return  ((url.indexOf('//') == 0) ? 'http:':'') + url
+}
+
+let taobaoOptionHtml = function(taobao, platform) {
+    let propPaths = taobao.skus
+      .filter(sku => sku.use)
+      .map(sku => sku.propPath.split(';'))
+
+    propPaths = _.uniq(_.flatten(propPaths))
+    let optionHtml = propPaths.map(path => {
+        let [pid, vid] = path.split(':')
+        let prop = taobao.skuProps.find(p => p.pid == pid) || {}
+        let option = (prop.values || []).find(v => v.vid == vid)
+        if (option && option.image) {
+            if (platform == 'ST11' && prop.st11UseSeq) {
+                return {name:option.seqName + '.' + option.customName, image: option.image}
+            } else {
+                return {name:option.customName, image: option.image}
+            }
+        }
+    }).filter(v => v)
+      .map(v => {
+          return `
+<div style="text-align:center;padding-bottom: 20px;padding-top:40px;margin-bottom:60px;margin-top:60px;border-bottom: 1px solid #999;">
+  <h3 style="text-align:center;font-size:30px;font-weight:500;margin-bottom: 50px;">${v['name']}</h3>
+  <p style="text-align:center;padding:0px;margin:0px;">
+    <img src="${http(v['image'])}" style="max-width:90%">
+  </p>
+</div>`
+      }).join('\n')
+
+    if (optionHtml) {
+        let optionTitle = '<h2 style="margin-top:300px;margin-bottom:150px;background-color:#444;color:white;padding:125px 0px;text-align:center;font-size:40px;font-weight:500;line-height:1;">선택 옵션<br><span style="font-size:28px;font-weight:400;">(옵션명/사진)</span></h2>'
+        return optionTitle+optionHtml
+    }
+
+    return optionHtml
+}
+
+let taobaoContentHtml = function(taobao, replace = {}, platform) {
+    let tags = []
+    if (taobao.contentComponents['bodyStartImage']) {
+        tags.push(`<img src="${taobao.contentComponents['bodyStartImage']}" style="width:100%" />`)
+    }
+
+    tags.push(taobao.contentComponents['bodyHtml'])
+    tags.push(replace['optionHtml'] || taobaoOptionHtml(taobao, platform))
+
+    if (taobao.contentComponents['bodyEndImage']) {
+        tags.push(`<img src="${taobao.contentComponents['bodyEndImage']}" style="width:100%" />`)
+    }
+
+    return tags.join('')
 }
 
 export function generateESMProductFromTaobao(taobao, esmProfile, item, delivery, deliveryTemplateNo) {
