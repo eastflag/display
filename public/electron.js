@@ -42,7 +42,6 @@ async function createWindow() {
   mainWindow.setResizable(true);
   mainWindow.on('closed', () => (mainWindow = null));
   mainWindow.focus();
-
 }
 
 

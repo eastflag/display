@@ -98,19 +98,27 @@ class ESM {
             }
         })
     }
-    async searchESMCategory(data) {
-        console.log($);
-        const {keyword} = data;
-        console.log(keyword);
+    async searchESMCategory(keyword) {
+        console.log(window.$);
 
         // await this.checkAndLoginForce()
-        let results = await this.execute((keyword) => {
-            return window.$.ajax({
-                type:'POST',
-                url:"/Sell/SingleGoods/GetSearchSDCategory",
-                contentType:'application/json',
-                data:JSON.stringify(keyword)})
-        }, keyword)
+        // let results = await this.execute(({keyword}) => {
+        //     return window.$.ajax({
+        //         type:'POST',
+        //         url:"/Sell/SingleGoods/GetSearchSDCategory",
+        //         contentType:'application/json',
+        //         data:JSON.stringify({keyword})})
+        // }, {keyword})
+
+        let results = await this.execute(({keyword}) => {
+            return fetch("/Sell/SingleGoods/GetSearchSDCategory", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({keyword})
+            });
+        }, {keyword});
 
         console.log(results);
 
@@ -127,13 +135,25 @@ class ESM {
     async getESMCategoryList(level, code) {
         await this.checkAndLoginForce()
 
-        let {Result:results} = await this.execute(({level, code}) => {
-            return $.ajax({
-                type:'POST',
-                url:"/Sell/SingleGoods/GetSDCategoryList",
-                contentType:'application/json',
-                data:JSON.stringify({parentCode: code, parentLevel: level})})
-        }, {level, code})
+        // let {Result:results} = await this.execute(({level, code}) => {
+        //     return $.ajax({
+        //         type:'POST',
+        //         url:"/Sell/SingleGoods/GetSDCategoryList",
+        //         contentType:'application/json',
+        //         data:JSON.stringify({parentCode: code, parentLevel: level})})
+        // }, {level, code})
+
+        let results = await this.execute(({level, code}) => {
+            return fetch("/Sell/SingleGoods/GetSDCategoryList", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({level, code})
+            })
+        }, {level, code});
+
+        console.log(results);
 
         for (let result of results) {
             result.name = [result['UpperCategoryName1'],
